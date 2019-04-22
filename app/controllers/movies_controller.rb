@@ -12,16 +12,39 @@ class MoviesController < ApplicationController
 
   def index
     # binding.pry
-
     ratings = if params.key?(:ratings)
                 params[:ratings].keys
+              elsif session.key?(:ratings)
+                session[:ratings]
               else
                 Movie.all_ratings
               end
 
-    @movies = Movie.with_ratings(ratings).order(params[:order_by])
+    hash = {}
+    ratings.each do |rating|
+      hash[rating] = 1
+    end
+
+    order_by = if params.key?(:order_by)
+                 params[:order_by]
+               else
+                 session[:order_by]
+               end
+
+    order_by = "" if order_by.nil?
+
+    if !params.key?(:ratings) || !params.key?(:order_by)
+      params[:ratings] = hash unless params.key?(:ratings)
+      params[:order_by] = order_by unless params.key?(:order_by)
+      flash.keep
+      redirect_to movies_path(params)
+    end
+
+    @movies = Movie.with_ratings(ratings).order(order_by)
     @all_ratings = Movie.ratings(ratings)
 
+    session[:order_by] = order_by
+    session[:ratings] = ratings
   end
 
   def new
