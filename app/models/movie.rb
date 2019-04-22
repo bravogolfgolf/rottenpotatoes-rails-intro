@@ -6,7 +6,7 @@ class Movie < ActiveRecord::Base
 
   def self.ratings(ratings)
     hash = {}
-    arr = select('rating').distinct.map(&:rating).sort
+    arr = all_ratings
     arr.each do |rating|
       hash[rating] = ratings.include? rating
     end
